@@ -1,0 +1,131 @@
+HTML
+-------------------------------------
+<a
+                    *ngIf="actionValue === 'Download E-Card' && column.masterPolicyNo !== null"
+                    (click)="openSelectPoliciesDialog(column.masterPolicyNo)"
+                    >{{ actionValue }}
+
+                    <i title="Click to Download Active Member List" class="material-icons" style="color: #fb0;">
+                      get_app</i
+                    >
+                  </a>
+ ------------------------------------------
+ <ng-template #ecardDialog>
+  <div>
+    <div style="font-size: 1.5em !important;display: flex;justify-content: flex-end;margin-top: -26px;">
+      <label style="font-size: 1.5em !important;" type="button" class="close1 cross-button " (click)="closeAllPopUp()"
+        >&times;</label
+      >
+    </div>
+
+    <h4>E-Card Download for Employee Ids</h4>
+
+    <br /><br />
+
+    <div class="row">
+      <div class="col-12">
+        <textarea
+          autocomplete="off"
+          (keyup)="checkData()"
+          [(ngModel)]="policyData1"
+          placeholder="Enter Employee Id for Download E-Card Separated with commas"
+        >
+        </textarea>
+      </div>
+    </div>
+
+    <div class="col-4">
+      <button style="width: 100%; font-family: muli !important;" (click)="ecardDownload('child')">
+        Download E-Card
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #userConfirmationForManualMapping>
+  <div class="row">
+    <div class="col-12" style="text-align: center;">
+      <h6>
+        Configuration not found for the Template. Do you want to Map Excel Manually ?
+      </h6>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12" style="text-align: center;">
+      <div class="col-6">
+        <button type="button" (click)="closePopUpDialog('YES')" style="width: 100%;">YES</button>
+      </div>
+      <div class="col-6">
+        <button type="button" style="background: #fff; color: red; width: 100%;" (click)="closePopUpDialog('NO')">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-template>
+===================================================================================================================================================================
+ ts
+ ----------------------------
+ 'Download E-Card',
+------------------------
+dialogRef: any;
+
+  tabSelectedIndex: any = 0;
+
+  @ViewChild('ecardDialog') ecardDialog: TemplateRef<any>;
+
+  masterPolicyno: any;
+  openSelectPoliciesDialog(masterPolicy: any) {
+    this.masterPolicyno = masterPolicy;
+    this.dialogRef = this.dialog.open(this.ecardDialog, {
+      width: '125%',
+
+      height: '600px',
+
+      disableClose: false
+    });
+  }
+  ecardDownload() {
+    if (this.policyData1 === '' || this.policyData1 === null) {
+      return this.toaster.error('please provide emploee id');
+    }
+
+    let emplist = this.policyData1.split(',');
+    let requestObject: any = {
+      masterPolicyNumber: this.masterPolicyno,
+
+      empList: emplist,
+
+      productCode: '10202'
+    };
+
+    this.loaderService.display(true);
+    this.actuarialService.ecard(requestObject).subscribe(
+      data1 => {
+        this.loaderService.display(false);
+        let array1 = data1['s3LinksByEmpId'];
+        array1.forEach(element1 => {
+          window.open(element1.s3Link, '_blank');
+        });
+      },
+
+      err => {
+        this.toaster.error(err.error);
+        this.loaderService.display(false);
+      }
+    );
+  }
+  ==========================================================================================================================
+  service
+  ----------------------------
+  ecard(requestObject: any) {
+    let header = {
+      'Content-Type': 'application/json',
+      authorization: 'E574A5D92B10E69CB65CA8A5CEE17013'
+    };
+    this.applicationService._postsURL = environment.digithealthservice + '/download/ecardbyEmpId';
+    return this.http.post(this.applicationService._postsURL, requestObject, { headers: header });
+  }
+=====================================================
+
+  
+ 
