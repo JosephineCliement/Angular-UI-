@@ -1,0 +1,73 @@
+service.ts
+---------------------------------
+ createActivity(person: any) {
+    let URL: any = environment.apiBaseUrl + '/insuranceActivity';
+    let header = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    return this.http.post(URL, person, { headers: header });
+  }
+
+  getActivity(PolicyNumber: any) {
+    let URL: any = environment.apiBaseUrl + `/checkIfActivityPresent?PolicyNumber=${PolicyNumber}&activityTypeId=558`;
+    let header = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    return this.http.get(URL, { headers: header, responseType: 'json' });
+  }
+  =============================================================================================================================
+  ts
+  ------------------
+  let Date123 = this.datepipe.transform(new Date(), ' MMM dd, yyyy hh:mm:ss aa');
+    this.service.getIMD();
+
+    if (this.service.isRenewable === true) {
+      this.loaderService.display(true);
+      this.summaryService.getActivity(this.service.quickQuoteResponse[0]['policyNumber']).subscribe(data => {
+        if (!data['activityPresent']) {
+          let person = {
+            activityID: 0,
+
+            activityDate: Date123,
+
+            agentId: this.mainService.agentCode,
+
+            userId: this.mainService.webuserid,
+
+            productId: 32,
+
+            activityTypeId: 558,
+
+            policyNumber: this.service.quickQuoteResponse[0]['policyNumber'],
+
+            versionNumber: 1,
+
+            status: 1,
+
+            createdDate: Date123,
+
+            lastModifiedUserId: 1,
+
+            createdUserId: 1,
+
+            lastModifiedDate: Date123,
+
+            person: {
+              personId: 'null',
+
+              firstName: this.getArrayDetails('firstName').split(',')[parseInt('0')],
+
+              createdDate: Date123,
+
+              createdUserId: 1,
+
+              lastModifiedDate: Date123,
+
+              lastModifiedUserId: 1
+            }
+          };
+        }
+      });
+    }
+    ===================================================================================================================================================
+  
